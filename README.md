@@ -44,6 +44,7 @@ with Basic authentication.
 ### Endpoints
 
 **CRUD Operations**
+
 | Method | Path | Description |
 | ------ | ---- | ----------- |
 | GET | `/collection/:coll` | Get all documents for a collection |
@@ -56,6 +57,7 @@ with Basic authentication.
 | DELETE | `/collection/:coll/:id` | Delete a document by id |
 
 **Other**
+
 | Method | Path | Description |
 | ------ | ---- | ----------- |
 | GET | `/definition/:coll` | Get the collection's definition |
