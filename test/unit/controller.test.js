@@ -5,7 +5,7 @@ const chai              = require('chai')
 const chaiAsPromised    = require('chai-as-promised')
 const mongoose          = require('mongoose')
 const Controller        = require('../../controller')
-const CollectionFactory = require('ichabod-core/collection-factory')
+const CollectionFactory = require('sevr/collection-factory')
 const collectionDefs    = require('../fixtures/collections')
 const ResponseMock      = require('../mocks/response')
 

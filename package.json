@@ -1,26 +1,33 @@
 {
-  "name": "ichabod-rest",
-  "version": "1.0.0",
-  "description": "",
+  "name": "sevr-rest",
+  "version": "0.1.0",
+  "description": "RESTful API Plugin for the Sevr Framework",
+  "keywords": [
+    "cms",
+    "api",
+    "rest",
+    "sevr"
+  ],
   "main": "index.js",
   "scripts": {
     "test": "mocha test/**/*"
   },
   "repository": {
     "type": "git",
-    "url": "git@gitlab.exclamationlabs.com:ichabod/ichabod-rest.git"
+    "url": "git@github.com:ExclamationLabs/sevr-rest.git"
   },
   "author": "David Street",
   "license": "MIT",
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-as-promised": "^5.3.0",
-    "mocha": "^2.4.5"
+    "mocha": "^2.4.5",
+    "mongoose": "^4.6.4",
+    "sevr": "^0.2.0"
   },
   "dependencies": {
     "body-parser": "^1.15.0",
     "express": "^4.13.4",
-    "lodash": "^4.11.1",
-    "mongoose": "^4.4.12"
+    "lodash": "^4.11.1"
   }
 }

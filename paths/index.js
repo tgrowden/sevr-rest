@@ -6,8 +6,9 @@
  */
 
 module.exports = {
-	COLLECTION: '/:coll',
-	DOCUMENT:   '/:coll/:id',
-	FIELD:      '/:coll/:id/:field',
-	DEFINITION: '/definitions/:coll'
+	COLLECTION:     '/collection/:coll',
+	DOCUMENT:       '/collection/:coll/:id',
+	FIELD:          '/collection/:coll/:id/:field',
+	DEFINITION:     '/definitions/:coll',
+	AUTHENTICATION: '/authenticate'
 }

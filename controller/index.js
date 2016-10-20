@@ -1,15 +1,13 @@
 'use strict'
 
-const mongoose   = require('mongoose')
 const bodyParser = require('body-parser')
-const Collection = require('ichabod-core/collection')
+const Collection = require('sevr/collection')
 const paths      = require('../paths')
 
-mongoose.Promise = global.Promise
-
 class Controller {
-	constructor(factory) {
+	constructor(factory, authentication) {
 		this._collectionFactory = factory
+		this._authentication = authentication
 	}
 
 	/**
@@ -19,6 +17,7 @@ class Controller {
 	get middleware() {
 		return [].concat(
 			this._getGlobalMiddleware(),
+			this._authentication.isEnabled ? this._getAuthMiddleware() : [],
 			this._getParameterMiddleware(),
 			this._getRoutes(),
 			this._getResponseMiddleware()
@@ -26,12 +25,26 @@ class Controller {
 	}
 
 	/**
-	 *
+	 * Get the global middleware
+	 * @return {Array}
+	 * @private
 	 */
 	_getGlobalMiddleware() {
 		return [
 			{ method: 'use', path: '/', callback: bodyParser.urlencoded({ extended: false }) },
 			{ method: 'use', path: '/', callback: bodyParser.json() }
+		]
+	}
+
+	/**
+	 * Get the authentication middleware
+	 * @return {Array}
+	 * @private
+	 */
+	_getAuthMiddleware() {
+		return [
+			{ name: 'auth',  method: 'use', path: '/',      callback: this._authorizeRequest.bind(this) },
+			{ name: 'token', method: 'get', path: '/token', callback: this._getToken.bind(this) }
 		]
 	}
 
@@ -93,6 +106,66 @@ class Controller {
 	}
 
 	/**
+	 * Authorization middleware
+	 * @param  {Object}   req
+	 * @param  {Object}   res
+	 * @param  {Function} next
+	 */
+	_authorizeRequest(req, res, next) {
+		const auth = req.get('authorization')
+		let type
+		let authValue
+
+		try {
+			type = /(Basic|Bearer)\s+.*/.exec(auth)[1]
+			authValue = auth.replace(/Basic|Bearer\s+/, '')
+		} catch (err) {
+			res.status(400)
+			return next({
+				name: 'Bad Request',
+				message: '400 Bad Request'
+			})
+		}
+
+		if (!type) {
+			res.status(400)
+			return next({
+				name: 'Bad Request',
+				message: '400 Bad Request'
+			})
+		}
+
+		if (type === 'Basic') {
+			const creds = new Buffer(authValue, 'base64').toString().split(':')
+			this._authentication.validateCredentials({
+				username: creds[0],
+				password: creds[1]
+			})
+			.then(user => {
+				req.user = user
+				next()
+			})
+			.catch(() => {
+				res.status(401)
+				next({
+					name: 'Unauthorized',
+					message: '401 Unauthorized'
+				})
+			})
+		} else {
+			this._authentication.verifyToken(authValue)
+				.then(user => {
+					req.user = user
+					next()
+				})
+				.catch(err => {
+					res.status(401)
+					next(err)
+				})
+		}
+	}
+
+	/**
 	 * Handle requests for collection and add the collection
 	 * to the request if exists. Send 404 otherwise
 	 * @param {Objcct}   req
@@ -127,7 +200,7 @@ class Controller {
 	 */
 	_attachIdToRequest(req, res, next, id) {
 		try {
-			req.documentId = new mongoose.Types.ObjectId(id)
+			req.documentId = id
 			next()
 		} catch (err) {
 			res.status(400)
@@ -203,6 +276,22 @@ class Controller {
 	}
 
 	/**
+	 * Handle REST request to get authorization token
+	 * @param {Object}   req
+	 * @param {Object}   res
+	 * @param {Function} next
+	 * @private
+	 */
+	_getToken(req, res, next) {
+		this._authentication.createToken(req.user)
+			.then(token => {
+				res.data = { token: token }
+				next()
+			})
+			.catch(next)
+	}
+
+	/**
 	 * Handle REST request to read collections
 	 * @param {Object}   req
 	 * @param {Object}   res
@@ -213,7 +302,7 @@ class Controller {
 		const coll = req.collection
 		const query = req.query
 
-		coll.read(query, true)
+		coll.read(query, null, true)
 			.then(docs => {
 				res.data = {
 					query: query,
