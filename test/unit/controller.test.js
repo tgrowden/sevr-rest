@@ -642,4 +642,53 @@ describe('Controller', function() {
 			})
 		})
 	})
+	
+	describe('_restDefine', function() {
+		let controller
+
+		before(function() {
+			controller = new Controller(factory)
+		})
+
+		it('should set a status of 200 when successful', function(done) {
+			const req = {
+				collection: postsCollection,
+			}
+			const res = new ResponseMock()
+
+			controller._restDefine(req, res, () => {
+				expect(res.statusSent).to.equal(200)
+				done()
+			})
+		})
+
+		it('should add the collection definition to the response', function(done) {
+			const req = {
+				collection: postsCollection,
+			}
+			const res = new ResponseMock()
+
+			controller._restDefine(req, res, () => {
+				expect(res.data).to.have.deep.property('data.name', 'posts')
+				expect(res.data).to.have.deep.property('data.modelName', 'Post')
+				expect(res.data).to.have.deep.property('data.fields.title')
+				expect(res.data).to.have.deep.property('data.fields.content')
+				expect(res.data).to.have.deep.property('data.fields.author')
+				
+				expect(res.data).to.have.deep.property('links.fields.author', '/definitions/users')
+				done()
+			})
+		})
+
+		it('should add all collection definitions to response when no collection is passed', function(done) {
+			const req = {}
+			const res = new ResponseMock()
+
+			controller._restDefine(req, res, () => {
+				expect(res.data).to.have.deep.property('data[0].name')
+				expect(res.data).to.have.deep.property('data[1].name')
+				done()
+			})
+		})
+	})
 })

@@ -102,7 +102,7 @@ class Controller {
 	 * @returns {String}
 	 */
 	getDefinitionLink(collectionName) {
-		return paths.DEFINITION.replace(':coll', collectionName)
+		return paths.DEFINITION.replace(':coll?', collectionName)
 	}
 
 	/**
@@ -465,36 +465,68 @@ class Controller {
 
 	/**
 	 * Handle REST request for collection definition
+	 * 
+	 * If no collection is found in `req`, all definitions
+	 * will be returned
+	 * 
 	 * @param {Object}   req
 	 * @param {Object}   res
 	 * @param {Function} next
 	 * @private
 	 */
-	_restDefine(req, res) {
-		const coll = req.collection
-		const popFields = coll.populationFields
+	_restDefine(req, res, next) {
+		if (!req.collection) {
+			const data = Object.keys(this._collectionFactory.collections).map(c => {
+				const coll = this._collectionFactory.collections[c]
+
+				return Object.assign({}, this._getCollectionDef(coll), {
+					name: c
+				})
+			})
+
+			res.data = { data}
+			next()
+		} else {
+			res.data = this._getCollectionDef(req.collection)
+			next()
+		}
+	}
+
+	/**
+	 * Get the collection definition object for a collection
+	 * @param {Collection} coll
+	 * @return {Object}
+	 * @private
+	 */
+	_getCollectionDef(coll) {
 		const fields = coll.getFields()
-		const sendData = {
-			success: true,
-			status: 200,
+		const fieldsObj = Object.keys(fields).reduce((prev, key) => {
+			const f = fields[key]
+			const { label, name, schemaType } = f
+
+			return Object.assign({}, prev, {
+				[key]: { label, name, schemaType }
+			})
+		}, {})
+
+		return {
 			data: {
 				name: coll.name,
 				modelName: coll.modelName,
-				fields: fields
+				fields: fieldsObj
 			},
 			links: {
-				fields: {}
+				fields: coll.populationFields.reduce((prev, f) => {
+					let fieldDef = fields[f]
+					let fieldRef = Collection.getFieldRef(fieldDef)
+					let refColl = this._collectionFactory.getInstanceWithModel(fieldRef)
+
+					return Object.assign({}, prev, {
+						[f]: this.getDefinitionLink(refColl.name)
+					})
+				}, {})
 			}
 		}
-
-		popFields.forEach(field => {
-			let fieldDef = fields[field]
-			let fieldRef = Collection.getFieldRef(fieldDef)
-			let refColl = this._collectionFactory.getInstanceWithModel(fieldRef)
-			sendData.links.fields[field] = this.getDefinitionLink(refColl.name)
-		})
-
-		res.send(sendData)
 	}
 }
 
