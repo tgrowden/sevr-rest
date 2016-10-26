@@ -12,18 +12,6 @@ const express       = require('express')
 const Controller    = require('./controller')
 const defaultConfig = require('./default-config')
 
-// module.exports = (ichabod, _config) => {
-// 	const config = _.merge({}, defaultConfig, _config)
-// 	const controller = new Controller(ichabod.factory, ichabod.authentication)
-// 	const server = ichabod.server
-// 	const apiServer = express()
-
-// 	ichabod.events.on('db-ready', () => {
-// 		bindMiddleware(controller.middleware, apiServer)
-// 		server.use(config.basePath, apiServer)
-// 	})
-// }
-
 class SevrRest {
 	constructor(sevr, config) {
 		this.sevr = sevr
