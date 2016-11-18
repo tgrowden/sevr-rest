@@ -1,5 +1,7 @@
 # sevr-rest
 
+[![Build Status](https://travis-ci.org/ExclamationLabs/sevr-rest.svg?branch=master)](https://travis-ci.org/ExclamationLabs/sevr-rest)
+
 RESTful API Plugin for the Sevr Framework
 
 ## Install
