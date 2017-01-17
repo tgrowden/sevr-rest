@@ -13,7 +13,7 @@ const expect = chai.expect
 const connection = {
 	host: 'localhost',
 	port: 27017,
-	database: 'ichabod-rest-test'
+	database: 'sevr-rest-test'
 }
 
 chai.use(chaiAsPromised)

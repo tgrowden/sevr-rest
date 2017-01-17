@@ -1,9 +1,9 @@
 'use strict'
 
 /**
- * Ichabod REST API
+ * Sevr REST API
  * ---
- * Plugin for the Ichabod CMS Framework that provides
+ * Plugin for the Sevr CMS Framework that provides
  * a RESTful API.
  */
 
